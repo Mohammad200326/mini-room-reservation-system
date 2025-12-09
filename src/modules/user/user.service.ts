@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { RegisterDTO } from '../auth/dto/auth.dto';
 import { DatabaseService } from '../database/database.service';
+import { User } from 'generated/prisma/client';
 
 @Injectable()
 export class UserService {
@@ -12,24 +13,18 @@ export class UserService {
     });
   }
 
+  findAll(): Promise<Omit<User, 'password'>[]> {
+    const users = this.prismaService.user.findMany({
+      omit: {
+        password: true,
+      },
+    });
+    return users;
+  }
+
   findByEmail(email: string) {
     return this.prismaService.user.findUnique({
       where: { email },
     });
-  }
-  findAll() {
-    return `This action returns all user`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  // update(id: number, updateUserDto: UpdateUserDto) {
-  //   return `This action updates a #${id} user`;
-  // }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
   }
 }
