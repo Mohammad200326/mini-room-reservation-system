@@ -5,6 +5,7 @@ import {
   UseGuards,
   Param,
   Patch,
+  Get,
 } from '@nestjs/common';
 import { RoomService } from './room.service';
 import { CreateRoomDTO, RoomResponseDTO, UpdateRoomDTO } from './dto/room.dto';
@@ -32,15 +33,15 @@ export class RoomController {
     return this.roomService.create(user.id, createRoomDto);
   }
 
-  // @Get()
-  // findAll() {
-  //   return this.roomService.findAll();
-  // }
+  @Get()
+  findAll(): Promise<RoomResponseDTO[]> {
+    return this.roomService.findAll();
+  }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.roomService.findOne(+id);
-  // }
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.roomService.findOne(id);
+  }
 
   @Patch(':id')
   @UseGuards(AuthGuard)
@@ -53,8 +54,8 @@ export class RoomController {
     return this.roomService.update(user.id, id, updateRoomDto);
   }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.roomService.remove(+id);
-  // }
+  @Get('owner/:ownerId')
+  findByOwnerId(@Param('ownerId') ownerId: string): Promise<RoomResponseDTO[]> {
+    return this.roomService.getRoomsByOwnerId(ownerId);
+  }
 }

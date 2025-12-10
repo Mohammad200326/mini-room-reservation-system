@@ -18,13 +18,15 @@ export class RoomService {
     });
   }
 
-  // findAll() {
-  //   return `This action returns all room`;
-  // }
+  findAll() {
+    return this.prismaService.room.findMany({});
+  }
 
-  // findOne(id: number) {
-  //   return `This action returns a #${id} room`;
-  // }
+  findOne(id: string) {
+    return this.prismaService.room.findUniqueOrThrow({
+      where: { id },
+    });
+  }
 
   async update(ownerId: string, roomId: string, updateRoomDto: UpdateRoomDTO) {
     const room = await this.prismaService.room.findUnique({
@@ -42,7 +44,12 @@ export class RoomService {
     });
   }
 
-  // remove(id: number) {
-  //   return `This action removes a #${id} room`;
-  // }
+  getRoomsByOwnerId(ownerId: string) {
+    return this.prismaService.room.findMany({
+      where: { ownerId },
+      include: {
+        bookings: true,
+      },
+    });
+  }
 }
