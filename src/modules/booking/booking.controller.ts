@@ -2,10 +2,10 @@ import {
   Controller,
   Post,
   Body,
-  UseGuards,
   Get,
   Patch,
   Param,
+  ForbiddenException,
 } from '@nestjs/common';
 import { BookingService } from './booking.service';
 import {
@@ -19,15 +19,15 @@ import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
 import {
   createBookingValidationSchema,
   updateBookingValidationSchema,
-} from './util/booking.vaildation.schema';
-import { AuthGuard } from 'src/guards/auth.guard';
+} from './util/booking.validation.schema';
+import { Roles } from 'src/decorators/roles.decorator';
 
 @Controller('booking')
-@UseGuards(AuthGuard)
 export class BookingController {
   constructor(private readonly bookingService: BookingService) {}
 
   @Post()
+  @Roles(['ADMIN', 'GUEST'])
   create(
     @User() user: UserResponseDto['user'],
     @Body(new ZodValidationPipe(createBookingValidationSchema))
@@ -37,16 +37,27 @@ export class BookingController {
   }
 
   @Get()
+  @Roles(['ADMIN', 'GUEST'])
   findByGuestId(
     @User() user: UserResponseDto['user'],
   ): Promise<BookingResponseDTO[]> {
     return this.bookingService.findBookingsByGuestId(user.id);
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.bookingService.findOne(+id);
-  // }
+  @Get(':id')
+  @Roles(['ADMIN', 'GUEST'])
+  async findOne(
+    @Param('id') id: string,
+    @User() user: UserResponseDto['user'],
+  ) {
+    const booking = await this.bookingService.findById(id);
+
+    if (booking?.guestId !== user.id && user.role !== 'ADMIN') {
+      throw new ForbiddenException('You cannot view this booking');
+    }
+
+    return booking;
+  }
 
   @Patch(':id')
   update(
@@ -57,9 +68,4 @@ export class BookingController {
   ): Promise<BookingResponseDTO> {
     return this.bookingService.update(user.id, id, updateBookingDto);
   }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.bookingService.remove(+id);
-  // }
 }

@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { CreateRoomDTO, UpdateRoomDTO } from './dto/room.dto';
 import { DatabaseService } from '../database/database.service';
+import { UserResponseDto } from '../auth/dto/auth.dto';
 
 @Injectable()
 export class RoomService {
@@ -44,7 +45,10 @@ export class RoomService {
     });
   }
 
-  getRoomsByOwnerId(ownerId: string) {
+  getRoomsByOwnerId(user: UserResponseDto['user'], ownerId: string) {
+    if (user.role !== 'ADMIN' && user.id !== ownerId) {
+      throw new ForbiddenException('You cannot access rooms of another owner');
+    }
     return this.prismaService.room.findMany({
       where: { ownerId },
       include: {

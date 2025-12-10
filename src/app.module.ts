@@ -8,6 +8,9 @@ import { AppService } from './app.service';
 import { DatabaseService } from './modules/database/database.service';
 import { RoomModule } from './modules/room/room.module';
 import { BookingModule } from './modules/booking/booking.module';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from './modules/auth/guards/auth.guard';
+import { RolesGuard } from './modules/auth/guards/roles.guard';
 
 @Module({
   imports: [
@@ -21,6 +24,11 @@ import { BookingModule } from './modules/booking/booking.module';
     BookingModule,
   ],
   controllers: [AppController],
-  providers: [AppService, DatabaseService],
+  providers: [
+    AppService,
+    DatabaseService,
+    { provide: APP_GUARD, useClass: AuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
+  ],
 })
 export class AppModule {}

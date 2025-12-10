@@ -18,28 +18,34 @@ export class BookingService {
     });
   }
 
-  findBookingsByGuestId(guestId: string) {
-    return this.prismaService.booking.findMany({
-      where: { guestId },
+  findById(id: string) {
+    return this.prismaService.booking.findUnique({
+      where: { id },
+      include: {
+        room: true,
+        guest: true,
+      },
     });
   }
 
-  // findOne(id: number) {
-  //   return `This action returns a #${id} booking`;
-  // }
+  async findBookingsByGuestId(guestId: string) {
+    const booking = await this.prismaService.booking.findMany({
+      where: { guestId },
+    });
+
+    if (!booking) throw new NotFoundException('Booking not found');
+
+    return booking;
+  }
 
   async update(
     guestId: string,
     bookingId: string,
     updateBookingDto: UpdateBookingDTO,
   ) {
-    const booking = await this.prismaService.booking.findUnique({
-      where: { id: bookingId },
-    });
+    const booking = await this.findById(bookingId);
 
-    if (!booking) throw new NotFoundException('Booking not found');
-
-    if (booking.guestId !== guestId)
+    if (booking!.guestId !== guestId)
       throw new ForbiddenException('You cannot update this booking');
 
     return await this.prismaService.booking.update({
@@ -47,8 +53,4 @@ export class BookingService {
       data: updateBookingDto,
     });
   }
-
-  // remove(id: number) {
-  //   return `This action removes a #${id} booking`;
-  // }
 }

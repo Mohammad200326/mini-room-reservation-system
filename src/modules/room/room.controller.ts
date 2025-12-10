@@ -1,30 +1,21 @@
-import {
-  Controller,
-  Post,
-  Body,
-  UseGuards,
-  Param,
-  Patch,
-  Get,
-} from '@nestjs/common';
+import { Controller, Post, Body, Param, Patch, Get } from '@nestjs/common';
 import { RoomService } from './room.service';
 import { CreateRoomDTO, RoomResponseDTO, UpdateRoomDTO } from './dto/room.dto';
 import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
 import {
   createRoomValidationSchema,
   updateRoomValidationSchema,
-} from './util/room.vaildation.schema';
+} from './util/room.validation.schema';
 import { User } from 'src/decorators/user.decorator';
 import { UserResponseDto } from '../auth/dto/auth.dto';
-import { AuthGuard } from 'src/guards/auth.guard';
-// import { Room } from 'generated/prisma/client';
+import { Roles } from 'src/decorators/roles.decorator';
 
 @Controller('room')
 export class RoomController {
   constructor(private readonly roomService: RoomService) {}
 
   @Post()
-  @UseGuards(AuthGuard)
+  @Roles(['ADMIN', 'OWNER'])
   create(
     @Body(new ZodValidationPipe(createRoomValidationSchema))
     createRoomDto: CreateRoomDTO,
@@ -44,7 +35,7 @@ export class RoomController {
   }
 
   @Patch(':id')
-  @UseGuards(AuthGuard)
+  @Roles(['ADMIN', 'OWNER'])
   update(
     @Param('id') id: string,
     @User() user: UserResponseDto['user'],
@@ -55,7 +46,11 @@ export class RoomController {
   }
 
   @Get('owner/:ownerId')
-  findByOwnerId(@Param('ownerId') ownerId: string): Promise<RoomResponseDTO[]> {
-    return this.roomService.getRoomsByOwnerId(ownerId);
+  @Roles(['ADMIN', 'OWNER'])
+  findByOwnerId(
+    @Param('ownerId') ownerId: string,
+    @User() user: UserResponseDto['user'],
+  ): Promise<RoomResponseDTO[]> {
+    return this.roomService.getRoomsByOwnerId(user, ownerId);
   }
 }

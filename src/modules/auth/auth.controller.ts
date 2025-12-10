@@ -6,8 +6,10 @@ import {
   registerValidationSchema,
 } from './util/auth.validation.schema';
 import type { RegisterDTO, UserResponseDto, LoginDTO } from './dto/auth.dto';
+import { IsPublic } from 'src/decorators/public.decorator';
 
 @Controller('auth')
+@IsPublic()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
