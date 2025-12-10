@@ -37,17 +37,21 @@ export class RoomController {
   }
 
   @Get()
-  findAll(
+  async findAll(
     @Query('minPrice') minPrice?: string,
     @Query('maxPrice') maxPrice?: string,
     @Query('minCapacity') minCapacity?: string,
     @Query('maxCapacity') maxCapacity?: string,
+    @Query('checkIn') checkIn?: string,
+    @Query('checkOut') checkOut?: string,
   ): Promise<RoomResponseDTO[]> {
-    return this.roomService.findAll({
+    return await this.roomService.findAll({
       minPrice: minPrice ? Number(minPrice) : undefined,
       maxPrice: maxPrice ? Number(maxPrice) : undefined,
       minCapacity: minCapacity ? Number(minCapacity) : undefined,
       maxCapacity: maxCapacity ? Number(maxCapacity) : undefined,
+      checkIn: checkIn ? new Date(checkIn) : undefined,
+      checkOut: checkOut ? new Date(checkOut) : undefined,
     });
   }
 

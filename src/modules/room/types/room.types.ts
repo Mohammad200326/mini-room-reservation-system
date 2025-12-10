@@ -3,4 +3,6 @@ export interface RoomFilters {
   maxPrice?: number;
   minCapacity?: number;
   maxCapacity?: number;
+  checkIn?: Date;
+  checkOut?: Date;
 }

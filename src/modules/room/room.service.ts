@@ -7,6 +7,7 @@ import { CreateRoomDTO, UpdateRoomDTO } from './types/room.dto';
 import { DatabaseService } from '../database/database.service';
 import { UserResponseDto } from '../auth/dto/auth.dto';
 import { Prisma } from 'generated/prisma/client';
+import { RoomFilters } from './types/room.types';
 
 @Injectable()
 export class RoomService {
@@ -20,12 +21,7 @@ export class RoomService {
     });
   }
 
-  findAll(filters: {
-    minPrice?: number;
-    maxPrice?: number;
-    minCapacity?: number;
-    maxCapacity?: number;
-  }) {
+  findAll(filters: RoomFilters) {
     const where: Prisma.RoomWhereInput = {};
 
     if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
@@ -44,7 +40,18 @@ export class RoomService {
       if (filters.maxCapacity !== undefined)
         where.capacity.lte = filters.maxCapacity;
     }
+    if (filters.checkIn && filters.checkOut) {
+      const checkInDate = new Date(filters.checkIn);
+      const checkOutDate = new Date(filters.checkOut);
 
+      where.bookings = {
+        none: {
+          status: { in: ['PENDING', 'CONFIRMED'] },
+          checkIn: { lt: checkOutDate },
+          checkOut: { gt: checkInDate },
+        },
+      };
+    }
     return this.prismaService.room.findMany({
       where,
       orderBy: { price: 'asc' },
@@ -52,7 +59,7 @@ export class RoomService {
   }
 
   findOne(id: string) {
-    return this.prismaService.room.findUniqueOrThrow({
+    return this.prismaService.room.findUnique({
       where: { id },
     });
   }
