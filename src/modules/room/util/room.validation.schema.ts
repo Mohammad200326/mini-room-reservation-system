@@ -1,6 +1,6 @@
 import { RoomStatus } from 'generated/prisma/enums';
 import z, { ZodType } from 'zod';
-import { CreateRoomDTO, UpdateRoomDTO } from '../dto/room.dto';
+import { CreateRoomDTO, UpdateRoomDTO } from '../types/room.dto';
 
 export const createRoomValidationSchema = z.object({
   name: z.string().min(2).max(100),

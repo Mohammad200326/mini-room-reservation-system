@@ -1,6 +1,18 @@
-import { Controller, Post, Body, Param, Patch, Get } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Patch,
+  Get,
+  Query,
+} from '@nestjs/common';
 import { RoomService } from './room.service';
-import { CreateRoomDTO, RoomResponseDTO, UpdateRoomDTO } from './dto/room.dto';
+import {
+  CreateRoomDTO,
+  RoomResponseDTO,
+  UpdateRoomDTO,
+} from './types/room.dto';
 import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
 import {
   createRoomValidationSchema,
@@ -25,8 +37,18 @@ export class RoomController {
   }
 
   @Get()
-  findAll(): Promise<RoomResponseDTO[]> {
-    return this.roomService.findAll();
+  findAll(
+    @Query('minPrice') minPrice?: string,
+    @Query('maxPrice') maxPrice?: string,
+    @Query('minCapacity') minCapacity?: string,
+    @Query('maxCapacity') maxCapacity?: string,
+  ): Promise<RoomResponseDTO[]> {
+    return this.roomService.findAll({
+      minPrice: minPrice ? Number(minPrice) : undefined,
+      maxPrice: maxPrice ? Number(maxPrice) : undefined,
+      minCapacity: minCapacity ? Number(minCapacity) : undefined,
+      maxCapacity: maxCapacity ? Number(maxCapacity) : undefined,
+    });
   }
 
   @Get(':id')

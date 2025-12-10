@@ -1,0 +1,6 @@
+export interface RoomFilters {
+  minPrice?: number;
+  maxPrice?: number;
+  minCapacity?: number;
+  maxCapacity?: number;
+}

@@ -3,9 +3,10 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateRoomDTO, UpdateRoomDTO } from './dto/room.dto';
+import { CreateRoomDTO, UpdateRoomDTO } from './types/room.dto';
 import { DatabaseService } from '../database/database.service';
 import { UserResponseDto } from '../auth/dto/auth.dto';
+import { Prisma } from 'generated/prisma/client';
 
 @Injectable()
 export class RoomService {
@@ -19,8 +20,35 @@ export class RoomService {
     });
   }
 
-  findAll() {
-    return this.prismaService.room.findMany({});
+  findAll(filters: {
+    minPrice?: number;
+    maxPrice?: number;
+    minCapacity?: number;
+    maxCapacity?: number;
+  }) {
+    const where: Prisma.RoomWhereInput = {};
+
+    if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+      where.price = {};
+      if (filters.minPrice !== undefined) where.price.gte = filters.minPrice;
+      if (filters.maxPrice !== undefined) where.price.lte = filters.maxPrice;
+    }
+
+    if (
+      filters.minCapacity !== undefined ||
+      filters.maxCapacity !== undefined
+    ) {
+      where.capacity = {};
+      if (filters.minCapacity !== undefined)
+        where.capacity.gte = filters.minCapacity;
+      if (filters.maxCapacity !== undefined)
+        where.capacity.lte = filters.maxCapacity;
+    }
+
+    return this.prismaService.room.findMany({
+      where,
+      orderBy: { price: 'asc' },
+    });
   }
 
   findOne(id: string) {
