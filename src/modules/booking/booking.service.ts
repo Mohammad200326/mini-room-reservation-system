@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -9,7 +10,29 @@ import { DatabaseService } from '../database/database.service';
 @Injectable()
 export class BookingService {
   constructor(private prismaService: DatabaseService) {}
-  create(guestId: string, createBookingDto: CreateBookingDTO) {
+  async create(guestId: string, createBookingDto: CreateBookingDTO) {
+    const { roomId, checkIn, checkOut } = createBookingDto;
+
+    const isConflicted = await this.prismaService.booking.findFirst({
+      where: {
+        roomId,
+        AND: [
+          {
+            checkIn: { lt: checkOut },
+          },
+          {
+            checkOut: { gt: checkIn },
+          },
+        ],
+      },
+    });
+
+    if (isConflicted) {
+      throw new ConflictException(
+        'This room is already booked during the selected dates.',
+      );
+    }
+
     return this.prismaService.booking.create({
       data: {
         ...createBookingDto,
